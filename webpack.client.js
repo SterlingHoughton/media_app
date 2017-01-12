@@ -1,6 +1,6 @@
 var path = require("path"),
-		webpack = require("webpack"),
-		ExtractTextPlugin = require("extract-text-webpack-plugin");
+	webpack = require("webpack"),
+	ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 const vendorModules = ["jquery", "lodash"];
 
@@ -20,6 +20,9 @@ function createConfig(isDebug) {
 
 		cssLoader.loader = ExtractTextPlugin.extract("style", "css");
 		sassLoader.loader = ExtractTextPlugin.extract("style", "css!sass");
+	} else {
+		plugins.push(new webpack.HotModuleReplacementPlugin());
+		appEntry.splice(0, 0, "webpack-hot-middleware/client");
 	}
 
 	//WEBPACK CONFIG

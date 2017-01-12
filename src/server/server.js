@@ -3,6 +3,7 @@ import "source-map-support/register";
 import express from "express";
 import http from "http";
 import socketIo from "socket.io";
+import chalk from "chalk";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -12,6 +13,29 @@ const server = new http.Server(app);
 const io = socketIo(server);
 
 //CLIENT WEBPACK
+if (process.env.USE_WEBPACK === "true") {
+	var webpackMiddleware = require("webpack-dev-middleware"),
+		webpackHotMiddleware = require("webpack-hot-middleware"),
+		webpack = require("webpack"),
+		clientConfig = require("../../webpack.client");
+
+	const compiler = webpack(clientConfig);
+	app.use(webpackMiddleware(compiler, {
+		publicPath: "/build/",
+		stats: {
+			colors: true,
+			chunks: false,
+			assets: false,
+			timings: false,
+			modules: false,
+			hash: false,
+			version: false
+		}
+	}));
+
+	app.use(webpackHotMiddleware(compiler));
+	console.log(chalk.bgRed("Using WebPack Dev Middleware!! THIS IS FOR DEV ONLY!"));
+}
 
 //EXPRESS CONFIG
 app.set("view engine", "pug");
