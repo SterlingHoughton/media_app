@@ -26,6 +26,7 @@
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-load-plugins": "^1.4.0",
     "gulp-nodemon": "^2.2.1",
+    "gulp-util": "^3.0.8",
     "rimraf": "^2.5.4",
     "webpack": "^1.14.0"
   },

@@ -1,5 +1,5 @@
 var path = require("path"),
-		fs = require("fs")
+		fs = require("fs"),
 		webpack = require("webpack");
 
 const nodeModules = fs.readdirSync("./node_modules").filter(d => d != ".bin");
