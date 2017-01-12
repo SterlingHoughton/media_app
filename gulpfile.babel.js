@@ -34,7 +34,6 @@ function prodClientBuild(callback) {
 	});
 }
 
-
 //PRIVATE SERVER TASKS
 const devServerWebpack = webpack(createServerConfig(true));
 const prodServerWebpack = webpack(createServerConfig(false));
