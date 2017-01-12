@@ -48,10 +48,56 @@
 	
 	__webpack_require__(1);
 	
-	var _test = __webpack_require__(2);
+	var _express = __webpack_require__(2);
 	
-	(0, _test.blegh)();
-	console.log("What??");
+	var _express2 = _interopRequireDefault(_express);
+	
+	var _http = __webpack_require__(3);
+	
+	var _http2 = _interopRequireDefault(_http);
+	
+	var _socket = __webpack_require__(4);
+	
+	var _socket2 = _interopRequireDefault(_socket);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var isDevelopment = process.env.NODE_ENV !== "production";
+	
+	//SETUP
+	var app = (0, _express2.default)();
+	var server = new _http2.default.Server(app);
+	var io = (0, _socket2.default)(server);
+	
+	//CLIENT WEBPACK
+	
+	//EXPRESS CONFIG
+	app.set("view engine", "pug");
+	app.use(_express2.default.static("public"));
+	
+	var useExternalStyles = !isDevelopment;
+	app.get("/", function (reqeust, response) {
+		response.render("index", {
+			useExternalStyles: useExternalStyles
+		});
+	});
+	
+	//MODULES
+	
+	//SOCKET
+	io.on("connection", function (socket) {
+		console.log("Got connection from " + socket.request.connection.remoteAddress);
+	});
+	
+	//STARTUP
+	var port = process.env.PORT || 3000;
+	function startServer() {
+		server.listen(port, function () {
+			console.log("Started http server on " + port);
+		});
+	}
+	
+	startServer();
 
 /***/ },
 /* 1 */
@@ -63,15 +109,19 @@
 /* 2 */
 /***/ function(module, exports) {
 
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.blegh = blegh;
-	function blegh() {
-		console.log("It worked!!!!!");
-	}
+	module.exports = require("express");
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = require("http");
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	module.exports = require("socket.io");
 
 /***/ }
 /******/ ]);

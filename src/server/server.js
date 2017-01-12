@@ -2,7 +2,7 @@ import "source-map-support/register";
 
 import express from "express";
 import http from "http";
-import socketIo from "socket.io"
+import socketIo from "socket.io";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -27,6 +27,9 @@ app.get("/", (reqeust, response) => {
 //MODULES
 
 //SOCKET
+io.on("connection", socket => {
+	console.log(`Got connection from ${socket.request.connection.remoteAddress}`);
+});
 
 //STARTUP
 const port = process.env.PORT || 3000;
