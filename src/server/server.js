@@ -59,7 +59,7 @@ io.on("connection", socket => {
 
 	const client = new ObservableSocket(socket);
 	client.onAction("login", creds => {
-		throw new Error("whoa");
+		
 	});
 });
 

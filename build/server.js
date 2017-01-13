@@ -120,9 +120,7 @@
 		console.log("Got connection from " + socket.request.connection.remoteAddress);
 	
 		var client = new _observableSocket.ObservableSocket(socket);
-		client.onAction("login", function (creds) {
-			throw new Error("whoa");
-		});
+		client.onAction("login", function (creds) {});
 	});
 	
 	//STARTUP

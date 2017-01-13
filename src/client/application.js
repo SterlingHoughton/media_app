@@ -14,6 +14,7 @@ services.server
 //AUTH
 
 //COMPONENTS
+require("./components/player/player");
 
 //BOOTSTRAP
 services.socket.connect();
