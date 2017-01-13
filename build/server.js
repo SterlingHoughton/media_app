@@ -114,6 +114,11 @@
 	//SOCKET
 	io.on("connection", function (socket) {
 		console.log("Got connection from " + socket.request.connection.remoteAddress);
+	
+		var index = 0;
+		setInterval(function () {
+			socket.emit("test", "On Index " + index++);
+		}, 1000);
 	});
 	
 	//STARTUP
