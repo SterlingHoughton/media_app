@@ -525,6 +525,15 @@
 				});
 			}
 		}, {
+			key: "onActions",
+			value: function onActions(actions) {
+				for (var action in actions) {
+					if (!actions.hasOwnProperty(action)) continue;
+	
+					this.onAction(action, actions[action]);
+				}
+			}
+		}, {
 			key: "_emitError",
 			value: function _emitError(action, id, error) {
 				var message = error && error.clientMessage || "Fatal Error";
@@ -552,7 +561,15 @@
 	});
 	exports.UsersModule = undefined;
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _lodash = __webpack_require__(18);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
 	var _module = __webpack_require__(15);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -569,9 +586,47 @@
 			var _this = _possibleConstructorReturn(this, (UsersModule.__proto__ || Object.getPrototypeOf(UsersModule)).call(this));
 	
 			_this._io = io;
+			_this._userList = [{ name: "Foo", color: _this.getColorForUsername("Foo") }, { name: "Bar", color: _this.getColorForUsername("Bar") }, { name: "Baz", color: _this.getColorForUsername("Baz") }];
 			return _this;
 		}
 	
+		_createClass(UsersModule, [{
+			key: "getColorForUsername",
+			value: function getColorForUsername(username) {
+				var hash = _lodash2.default.reduce(username, function (hash, ch) {
+					return ch.charCodeAt(0) + (hash << 6) + (hash << 16) - hash;
+				}, 0);
+	
+				hash = Math.abs(hash);
+				var hue = hash % 360,
+				    saturation = hash % 25 + 70,
+				    lightness = 100 - (hash % 15 + 35);
+	
+				return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
+			}
+		}, {
+			key: "registerClient",
+			value: function registerClient(client) {
+				var _this2 = this;
+	
+				var index = 0;
+				setInterval(function () {
+					var username = "New user " + index;
+					var user = { name: username, color: _this2.getColorForUsername(username) };
+					client.emit("users:added", user);
+				}, 2000);
+				client.onActions({
+					"users:list": function usersList() {
+						return _this2._userList;
+					},
+	
+					"auth:login": function authLogin() {},
+	
+					"auth:logout": function authLogout() {}
+				});
+			}
+		}]);
+
 		return UsersModule;
 	}(_module.ModuleBase);
 
@@ -686,6 +741,12 @@
 	
 		return ChatModule;
 	}(_module.ModuleBase);
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	module.exports = require("lodash");
 
 /***/ }
 /******/ ]);
