@@ -1,6 +1,6 @@
-import {ElementCompnent} from "../../lib/component";
+import {ElementComponent} from "../../lib/component";
 
-export class PlaylistContextMenuComponent extends ElementCompnent {
+export class PlaylistContextMenuComponent extends ElementComponent {
 	constructor() {
 		super("div");
 		this.$element.addClass("context-menu");
