@@ -64,15 +64,15 @@
 	
 	var _chalk2 = _interopRequireDefault(_chalk);
 	
-	var _rxjs = __webpack_require__(13);
+	var _rxjs = __webpack_require__(6);
 	
-	var _observableSocket = __webpack_require__(12);
+	var _observableSocket = __webpack_require__(7);
 	
-	var _users = __webpack_require__(14);
+	var _users = __webpack_require__(8);
 	
-	var _playlist = __webpack_require__(16);
+	var _playlist = __webpack_require__(11);
 	
-	var _chat = __webpack_require__(17);
+	var _chat = __webpack_require__(12);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -87,10 +87,10 @@
 	
 	//CLIENT WEBPACK
 	if (process.env.USE_WEBPACK === "true") {
-		var webpackMiddleware = __webpack_require__(6),
-		    webpackHotMiddleware = __webpack_require__(7),
-		    webpack = __webpack_require__(8),
-		    clientConfig = __webpack_require__(9);
+		var webpackMiddleware = __webpack_require__(13),
+		    webpackHotMiddleware = __webpack_require__(14),
+		    webpack = __webpack_require__(15),
+		    clientConfig = __webpack_require__(16);
 	
 		var compiler = webpack(clientConfig);
 		app.use(webpackMiddleware(compiler, {
@@ -241,93 +241,10 @@
 /* 6 */
 /***/ function(module, exports) {
 
-	module.exports = require("webpack-dev-middleware");
+	module.exports = require("rxjs");
 
 /***/ },
 /* 7 */
-/***/ function(module, exports) {
-
-	module.exports = require("webpack-hot-middleware");
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-	module.exports = require("webpack");
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var path = __webpack_require__(10),
-	    webpack = __webpack_require__(8),
-	    ExtractTextPlugin = __webpack_require__(11);
-	
-	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs"];
-	
-	var dirname = path.resolve("./");
-	function createConfig(isDebug) {
-		var devTool = isDebug ? "eval-source-map" : "source-map";
-		var plugins = [new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.js")];
-	
-		var cssLoader = { test: /\.css$/, loader: "style!css" };
-		var sassLoader = { test: /\.scss$/, loader: "style!css!sass" };
-		var appEntry = ["./src/client/application.js"];
-	
-		if (!isDebug) {
-			plugins.push(new webpack.optimize.UglifyJsPlugin());
-			plugins.push(new ExtractTextPlugin("[name].css"));
-	
-			cssLoader.loader = ExtractTextPlugin.extract("style", "css");
-			sassLoader.loader = ExtractTextPlugin.extract("style", "css!sass");
-		} else {
-			plugins.push(new webpack.HotModuleReplacementPlugin());
-			appEntry.splice(0, 0, "webpack-hot-middleware/client");
-		}
-	
-		//WEBPACK CONFIG
-		return {
-			devtool: devTool,
-			entry: {
-				application: appEntry,
-				vendor: vendorModules
-			},
-			output: {
-				path: path.join(dirname, "public", "build"),
-				filename: "[name].js",
-				publicPath: "/build/"
-			},
-			resolve: {
-				alias: {
-					shared: path.join(dirname, "src", "shared")
-				}
-			},
-			module: {
-				loaders: [{ test: /\.js$/, loader: "babel", exclude: /node_modules/ }, { test: /\.js$/, loader: "eslint", exclude: /node_modules/ }, { test: /\.(png|jpg|jpeg|gif|woff|ttf|eot|svg|woff2)/, loader: "url-loader?limit=1024" }, cssLoader, sassLoader]
-			},
-			plugins: plugins
-		};
-	}
-	
-	module.exports = createConfig(true);
-	module.exports.create = createConfig;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	module.exports = require("path");
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	module.exports = require("extract-text-webpack-plugin");
-
-/***/ },
-/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -343,7 +260,7 @@
 	
 	exports.clientMessage = clientMessage;
 	
-	var _rxjs = __webpack_require__(13);
+	var _rxjs = __webpack_require__(6);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -545,13 +462,7 @@
 	}();
 
 /***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	module.exports = require("rxjs");
-
-/***/ },
-/* 14 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -563,11 +474,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _lodash = __webpack_require__(18);
+	var _lodash = __webpack_require__(9);
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
-	var _module = __webpack_require__(15);
+	var _module = __webpack_require__(10);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -614,9 +525,11 @@
 					var username = "New user " + index;
 					var user = { name: username, color: _this2.getColorForUsername(username) };
 					client.emit("users:added", user);
+					index++;
 				}, 2000);
 				client.onActions({
 					"users:list": function usersList() {
+						console.log("USERS LIST");
 						return _this2._userList;
 					},
 	
@@ -631,7 +544,13 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 15 */
+/* 9 */
+/***/ function(module, exports) {
+
+	module.exports = require("lodash");
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -643,7 +562,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _rxjs = __webpack_require__(13);
+	var _rxjs = __webpack_require__(6);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -671,7 +590,7 @@
 	}();
 
 /***/ },
-/* 16 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -681,7 +600,7 @@
 	});
 	exports.PlaylistModule = undefined;
 	
-	var _module = __webpack_require__(15);
+	var _module = __webpack_require__(10);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -708,7 +627,7 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 17 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -718,7 +637,7 @@
 	});
 	exports.ChatModule = undefined;
 	
-	var _module = __webpack_require__(15);
+	var _module = __webpack_require__(10);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -743,10 +662,93 @@
 	}(_module.ModuleBase);
 
 /***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	module.exports = require("webpack-dev-middleware");
+
+/***/ },
+/* 14 */
+/***/ function(module, exports) {
+
+	module.exports = require("webpack-hot-middleware");
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	module.exports = require("webpack");
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var path = __webpack_require__(17),
+	    webpack = __webpack_require__(15),
+	    ExtractTextPlugin = __webpack_require__(18);
+	
+	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs"];
+	
+	var dirname = path.resolve("./");
+	function createConfig(isDebug) {
+		var devTool = isDebug ? "eval-source-map" : "source-map";
+		var plugins = [new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.js")];
+	
+		var cssLoader = { test: /\.css$/, loader: "style!css" };
+		var sassLoader = { test: /\.scss$/, loader: "style!css!sass" };
+		var appEntry = ["./src/client/application.js"];
+	
+		if (!isDebug) {
+			plugins.push(new webpack.optimize.UglifyJsPlugin());
+			plugins.push(new ExtractTextPlugin("[name].css"));
+	
+			cssLoader.loader = ExtractTextPlugin.extract("style", "css");
+			sassLoader.loader = ExtractTextPlugin.extract("style", "css!sass");
+		} else {
+			plugins.push(new webpack.HotModuleReplacementPlugin());
+			appEntry.splice(0, 0, "webpack-hot-middleware/client");
+		}
+	
+		//WEBPACK CONFIG
+		return {
+			devtool: devTool,
+			entry: {
+				application: appEntry,
+				vendor: vendorModules
+			},
+			output: {
+				path: path.join(dirname, "public", "build"),
+				filename: "[name].js",
+				publicPath: "/build/"
+			},
+			resolve: {
+				alias: {
+					shared: path.join(dirname, "src", "shared")
+				}
+			},
+			module: {
+				loaders: [{ test: /\.js$/, loader: "babel", exclude: /node_modules/ }, { test: /\.js$/, loader: "eslint", exclude: /node_modules/ }, { test: /\.(png|jpg|jpeg|gif|woff|ttf|eot|svg|woff2)/, loader: "url-loader?limit=1024" }, cssLoader, sassLoader]
+			},
+			plugins: plugins
+		};
+	}
+	
+	module.exports = createConfig(true);
+	module.exports.create = createConfig;
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	module.exports = require("path");
+
+/***/ },
 /* 18 */
 /***/ function(module, exports) {
 
-	module.exports = require("lodash");
+	module.exports = require("extract-text-webpack-plugin");
 
 /***/ }
 /******/ ]);

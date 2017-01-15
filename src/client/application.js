@@ -22,6 +22,6 @@ require("./components/playlist/playlist");
 //BOOTSTRAP
 services.socket.connect();
 
-services.usersStore.state$.subscribe(state => {
-	console.log(state);
-});
+// services.usersStore.state$.subscribe(state => {
+// 	console.log(state);
+// });
