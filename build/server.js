@@ -265,6 +265,12 @@
 	
 		return subscription;
 	};
+	
+	_rxjs.Observable.prototype.catchWrap = function () {
+		return this.catch(function (error) {
+			return _rxjs.Observable.of({ error: error });
+		});
+	};
 
 /***/ },
 /* 8 */
@@ -586,7 +592,7 @@
 				this._users[username] = client;
 				this._userList.push(auth);
 	
-				this._io.emit("users;added", auth);
+				this._io.emit("users:added", auth);
 				console.log("User " + username + " logged in");
 				return _rxjs.Observable.of(auth);
 			}
@@ -702,7 +708,7 @@
 	
 		if (username.length >= 20) validator.error("Username must be fewer than 20 characters");
 	
-		if (!USERNAME_REGEX.test(username)) validator.error("Username can only contain numbers, digits, undercores and dashes");
+		if (!USERNAME_REGEX.test(username)) validator.error("Username can only contain numbers, digits, underscores and dashes");
 	
 		return validator;
 	}

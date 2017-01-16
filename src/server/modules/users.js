@@ -56,7 +56,7 @@ export class UsersModule extends ModuleBase {
 		this._users[username] = client;
 		this._userList.push(auth);
 
-		this._io.emit("users;added", auth);
+		this._io.emit("users:added", auth);
 		console.log(`User ${username} logged in`);
 		return Observable.of(auth);
 	}
