@@ -827,13 +827,22 @@
 	});
 	exports.ChatModule = undefined;
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _module = __webpack_require__(11);
+	
+	var _chat = __webpack_require__(22);
+	
+	var _observableSocket = __webpack_require__(8);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var MAX_HISTORY = 100;
+	var BATCH_SIZE = 10;
 	
 	var ChatModule = exports.ChatModule = function (_ModuleBase) {
 		_inherits(ChatModule, _ModuleBase);
@@ -845,9 +854,56 @@
 	
 			_this._io = io;
 			_this._users = usersModule;
+			_this._chatLog = [];
 			return _this;
 		}
 	
+		_createClass(ChatModule, [{
+			key: "sendMessage",
+			value: function sendMessage(user, message, type) {
+				message = message.trim();
+	
+				var validator = (0, _chat.validationSendMessage)(user, message, type);
+				if (!validator.isValid) return validator.throw$();
+	
+				var newMessage = {
+					user: { name: user.name, color: user.color },
+					message: message,
+					time: new Date().getTime(),
+					type: type
+				};
+	
+				this._chatLog.push(newMessage);
+	
+				if (this._chatLog.length >= MAX_HISTORY) this.chatLog.splice(0, BATCH_SIZE);
+	
+				this._io.emit("chat:added", newMessage);
+			}
+		}, {
+			key: "registerClient",
+			value: function registerClient(client) {
+				var _this2 = this;
+	
+				client.onActions({
+					"chat:list": function chatList() {
+						return _this2._chatLog;
+					},
+	
+					"chat:add": function chatAdd(_ref) {
+						var message = _ref.message,
+						    type = _ref.type;
+	
+						type = type || "normal";
+	
+						var user = _this2._users.getUserForClient(client);
+						if (!user) return (0, _observableSocket.fail)("You must be logged in");
+	
+						_this2.sendMessage(user, message, type);
+					}
+				});
+			}
+		}]);
+
 		return ChatModule;
 	}(_module.ModuleBase);
 
@@ -939,6 +995,40 @@
 /***/ function(module, exports) {
 
 	module.exports = require("extract-text-webpack-plugin");
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.MESSAGE_TYPES = undefined;
+	exports.validateSendMessage = validateSendMessage;
+	
+	var _lodash = __webpack_require__(10);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _validator = __webpack_require__(13);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var MESSAGE_TYPES = exports.MESSAGE_TYPES = ["normal"];
+	
+	function validateSendMessage(user, message, type) {
+		var validator = new _validator.Validator();
+	
+		if (message.length > 50) validator.error("Message must be smaller than 50 characters");
+	
+		if (message.trim().length === 0) validator.error("Message cannot be empty");
+	
+		if (!_lodash2.default.includes(MESSAGE_TYPES, type)) validator.error("Invalid message type " + type);
+	
+		return validator;
+	}
 
 /***/ }
 /******/ ]);
