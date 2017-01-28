@@ -1,6 +1,6 @@
 import {ModuleBase} from "../lib/module";
 
-import {validationSendMessage} from "shared/validation/chat";
+import {validateSendMessage} from "shared/validation/chat";
 import {fail} from "shared/observable-socket";
 
 const MAX_HISTORY = 100;
@@ -17,7 +17,7 @@ export class ChatModule extends ModuleBase {
 	sendMessage(user, message, type) {
 		message = message.trim();
 
-		const validator = validationSendMessage(user, message, type);
+		const validator = validateSendMessage(user, message, type);
 		if (!validator.isValid)
 			return validator.throw$();
 
@@ -31,7 +31,7 @@ export class ChatModule extends ModuleBase {
 		this._chatLog.push(newMessage);
 
 		if (this._chatLog.length >= MAX_HISTORY)
-			this.chatLog.splice(0, BATCH_SIZE);
+			this._chatLog.splice(0, BATCH_SIZE);
 
 		this._io.emit("chat:added", newMessage);
 	}

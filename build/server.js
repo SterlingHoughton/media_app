@@ -89,10 +89,10 @@
 	
 	//CLIENT WEBPACK
 	if (process.env.USE_WEBPACK === "true") {
-		var webpackMiddleware = __webpack_require__(16),
-		    webpackHotMiddleware = __webpack_require__(17),
-		    webpack = __webpack_require__(18),
-		    clientConfig = __webpack_require__(19);
+		var webpackMiddleware = __webpack_require__(17),
+		    webpackHotMiddleware = __webpack_require__(18),
+		    webpack = __webpack_require__(19),
+		    clientConfig = __webpack_require__(20);
 	
 		var compiler = webpack(clientConfig);
 		app.use(webpackMiddleware(compiler, {
@@ -831,7 +831,7 @@
 	
 	var _module = __webpack_require__(11);
 	
-	var _chat = __webpack_require__(22);
+	var _chat = __webpack_require__(16);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -863,7 +863,7 @@
 			value: function sendMessage(user, message, type) {
 				message = message.trim();
 	
-				var validator = (0, _chat.validationSendMessage)(user, message, type);
+				var validator = (0, _chat.validateSendMessage)(user, message, type);
 				if (!validator.isValid) return validator.throw$();
 	
 				var newMessage = {
@@ -875,7 +875,7 @@
 	
 				this._chatLog.push(newMessage);
 	
-				if (this._chatLog.length >= MAX_HISTORY) this.chatLog.splice(0, BATCH_SIZE);
+				if (this._chatLog.length >= MAX_HISTORY) this._chatLog.splice(0, BATCH_SIZE);
 	
 				this._io.emit("chat:added", newMessage);
 			}
@@ -909,31 +909,65 @@
 
 /***/ },
 /* 16 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = require("webpack-dev-middleware");
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.MESSAGE_TYPES = undefined;
+	exports.validateSendMessage = validateSendMessage;
+	
+	var _lodash = __webpack_require__(10);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _validator = __webpack_require__(13);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var MESSAGE_TYPES = exports.MESSAGE_TYPES = ["normal"];
+	
+	function validateSendMessage(user, message, type) {
+		var validator = new _validator.Validator();
+	
+		if (message.length > 50) validator.error("Message must be smaller than 50 characters");
+	
+		if (message.trim().length === 0) validator.error("Message cannot be empty");
+	
+		if (!_lodash2.default.includes(MESSAGE_TYPES, type)) validator.error("Invalid message type " + type);
+	
+		return validator;
+	}
 
 /***/ },
 /* 17 */
 /***/ function(module, exports) {
 
-	module.exports = require("webpack-hot-middleware");
+	module.exports = require("webpack-dev-middleware");
 
 /***/ },
 /* 18 */
 /***/ function(module, exports) {
 
-	module.exports = require("webpack");
+	module.exports = require("webpack-hot-middleware");
 
 /***/ },
 /* 19 */
+/***/ function(module, exports) {
+
+	module.exports = require("webpack");
+
+/***/ },
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var path = __webpack_require__(20),
-	    webpack = __webpack_require__(18),
-	    ExtractTextPlugin = __webpack_require__(21);
+	var path = __webpack_require__(21),
+	    webpack = __webpack_require__(19),
+	    ExtractTextPlugin = __webpack_require__(22);
 	
 	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs"];
 	
@@ -985,50 +1019,16 @@
 	module.exports.create = createConfig;
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = require("path");
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	module.exports = require("extract-text-webpack-plugin");
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.MESSAGE_TYPES = undefined;
-	exports.validateSendMessage = validateSendMessage;
-	
-	var _lodash = __webpack_require__(10);
-	
-	var _lodash2 = _interopRequireDefault(_lodash);
-	
-	var _validator = __webpack_require__(13);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var MESSAGE_TYPES = exports.MESSAGE_TYPES = ["normal"];
-	
-	function validateSendMessage(user, message, type) {
-		var validator = new _validator.Validator();
-	
-		if (message.length > 50) validator.error("Message must be smaller than 50 characters");
-	
-		if (message.trim().length === 0) validator.error("Message cannot be empty");
-	
-		if (!_lodash2.default.includes(MESSAGE_TYPES, type)) validator.error("Invalid message type " + type);
-	
-		return validator;
-	}
 
 /***/ }
 /******/ ]);
