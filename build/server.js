@@ -70,6 +70,8 @@
 	
 	var _observableSocket = __webpack_require__(8);
 	
+	var _file = __webpack_require__(23);
+	
 	var _users = __webpack_require__(9);
 	
 	var _playlist = __webpack_require__(14);
@@ -125,7 +127,7 @@
 	
 	//SERVICES
 	var videoServices = [];
-	var playlistRepository = {};
+	var playlistRepository = new _file.FileRepository("./data/playlist.json");
 	
 	//MODULES
 	var users = new _users.UsersModule(io);
@@ -790,6 +792,8 @@
 	});
 	exports.PlaylistModule = undefined;
 	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
 	var _module = __webpack_require__(11);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -810,9 +814,62 @@
 			_this._users = usersModule;
 			_this._repository = playlistRepository;
 			_this._services = videoServices;
+	
+			_this._nextSourceId = 1;
+			_this._playlist = [];
 			return _this;
 		}
 	
+		_createClass(PlaylistModule, [{
+			key: "init$",
+			value: function init$() {
+				return this._repository.getAll$().do(this.setPlaylist.bind(this));
+			}
+		}, {
+			key: "setPlaylist",
+			value: function setPlaylist(playlist) {
+				this._playlist = playlist;
+	
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+	
+				try {
+					for (var _iterator = playlist[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var source = _step.value;
+	
+						source.id = this._nextSourceId++;
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+	
+				this._io.emit("playlist:list", this._playlist);
+			}
+		}, {
+			key: "registerClient",
+			value: function registerClient(client) {
+				var _this2 = this;
+	
+				client.onActions({
+					"playlist:list": function playlistList() {
+						return _this2._playlist;
+					}
+				});
+			}
+		}]);
+
 		return PlaylistModule;
 	}(_module.ModuleBase);
 
@@ -1029,6 +1086,75 @@
 /***/ function(module, exports) {
 
 	module.exports = require("extract-text-webpack-plugin");
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.FileRepository = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _fs = __webpack_require__(24);
+	
+	var _fs2 = _interopRequireDefault(_fs);
+	
+	var _rxjs = __webpack_require__(6);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var readFile = _rxjs.Observable.bindNodeCallback(_fs2.default.readFile);
+	var writeFile = _rxjs.Observable.bindNodeCallback(_fs2.default.writeFile);
+	
+	var FileRepository = exports.FileRepository = function () {
+		function FileRepository(filename) {
+			_classCallCheck(this, FileRepository);
+	
+			this._filename = filename;
+		}
+	
+		_createClass(FileRepository, [{
+			key: "getAll$",
+			value: function getAll$() {
+				var _this = this;
+	
+				return readFile(this._filename).map(function (contents) {
+					return JSON.parse(contents);
+				}).do(function () {
+					console.log(_this._filename + ": got all data");
+				}).catch(function (e) {
+					console.error(_this._filename + ": failed to get all data: " + (e.stack || e));
+					return _rxjs.Observable.throw(e);
+				});
+			}
+		}, {
+			key: "save$",
+			value: function save$(items) {
+				var _this2 = this;
+	
+				return writeFile(this._filename, JSON.stringify(items)).do(function () {
+					console.log(_this2._filename + ": \"data saved\"");
+				}).catch(function (e) {
+					console.error(_this2._filename + ": failed to save data: " + (e.stack || e));
+				});
+			}
+		}]);
+
+		return FileRepository;
+	}();
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	module.exports = require("fs");
 
 /***/ }
 /******/ ]);
