@@ -1026,7 +1026,7 @@
 	    webpack = __webpack_require__(19),
 	    ExtractTextPlugin = __webpack_require__(22);
 	
-	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs", "moment"];
+	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs", "moment", "moment-duration-format"];
 	
 	var dirname = path.resolve("./");
 	function createConfig(isDebug) {
