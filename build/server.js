@@ -273,6 +273,20 @@
 			return _rxjs.Observable.of({ error: error });
 		});
 	};
+	
+	_rxjs.Observable.fromEventNoDefault = function (element, event) {
+		return _rxjs.Observable.fromEvent(element, event).do(function (e) {
+			return e.preventDefault();
+		});
+	};
+	
+	_rxjs.Observable.fromPrompt = function (promptText) {
+		return new _rxjs.Observable(function (observer) {
+			var result = window.prompt(promptText);
+			observer.next(result);
+			observer.complete();
+		});
+	};
 
 /***/ },
 /* 8 */
