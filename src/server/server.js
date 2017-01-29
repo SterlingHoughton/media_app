@@ -10,6 +10,7 @@ import "shared/operators";
 import {ObservableSocket} from "shared/observable-socket";
 
 import {FileRepository} from "./repositories/file";
+import {YoutubeService} from "./services/youtube";
 
 import {UsersModule} from "./modules/users";
 import {PlaylistModule} from "./modules/playlist";
@@ -59,7 +60,7 @@ app.get("/", (reqeust, response) => {
 });
 
 //SERVICES
-const videoServices = [];
+const videoServices = [new YoutubeService("AIzaSyCng0zzLe_Dga9R-lhAc94IrMYhxkPD0AM")];
 const playlistRepository = new FileRepository("./data/playlist.json");
 
 //MODULES

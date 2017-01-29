@@ -1,5 +1,6 @@
 import $ from "jquery";
 import moment from "moment";
+import {Observable} from "rxjs";
 
 import {ElementComponent} from "../../lib/component";
 
@@ -23,17 +24,45 @@ export class PlaylistListComponent extends ElementComponent {
 		this.children.push(sort);
 
 		//PLAYLIST
-		this._playlist.state$
-		.filter(a => a.type === "list")
-		.compSubscribe(this, ({state}) => {
-			$list.empty();
-			itemsMap = {};
-			for (let source of state.list) {
+		Observable.merge(
+			this._playlist.state$.first(),
+			this._playlist.actions$.filter(a => a.type === "list"))
+			.compSubscribe(this, ({state}) => {
+				$list.empty();
+				itemsMap = {};
+				for (let source of state.list) {
+					const comp = new PlaylistItemComponent(source);
+					itemsMap[source.id] = comp;
+					comp.attach($list);
+				}
+			});
+
+		this._playlist.actions$
+			.filter(a => a.type === "add")
+			.compSubscribe(this, ({source, addAfter}) => {
 				const comp = new PlaylistItemComponent(source);
-				itemsMap[source.id] = comp;
 				comp.attach($list);
-			}
-		});
+
+				itemsMap[source.id] = comp;
+				this._addItem(comp, addAfter ? itemsMap[addAfter.id] : null);
+			});
+	}
+
+	_addItem(comp, addAfterComp) {
+		if (addAfterComp)
+			addAfterComp.$element.after(comp.$element);
+		else
+			this.$element.prepend(comp.$element);
+
+		const oldHeight = comp.$element.height();
+		comp.$element
+			.addClass("selected")
+			.css({height: 0, opacity: 0})
+			.animate({height: oldHeight, opacity: 1}, 250, () => {
+				comp.$element
+					.removeClass("selected")
+					.css({height: "", opacity: ""});
+			});
 	}
 }
 

@@ -70,13 +70,15 @@
 	
 	var _observableSocket = __webpack_require__(8);
 	
-	var _file = __webpack_require__(23);
+	var _file = __webpack_require__(9);
 	
-	var _users = __webpack_require__(9);
+	var _youtube = __webpack_require__(11);
 	
-	var _playlist = __webpack_require__(14);
+	var _users = __webpack_require__(12);
 	
-	var _chat = __webpack_require__(15);
+	var _playlist = __webpack_require__(17);
+	
+	var _chat = __webpack_require__(19);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -91,10 +93,10 @@
 	
 	//CLIENT WEBPACK
 	if (process.env.USE_WEBPACK === "true") {
-		var webpackMiddleware = __webpack_require__(17),
-		    webpackHotMiddleware = __webpack_require__(18),
-		    webpack = __webpack_require__(19),
-		    clientConfig = __webpack_require__(20);
+		var webpackMiddleware = __webpack_require__(21),
+		    webpackHotMiddleware = __webpack_require__(22),
+		    webpack = __webpack_require__(23),
+		    clientConfig = __webpack_require__(24);
 	
 		var compiler = webpack(clientConfig);
 		app.use(webpackMiddleware(compiler, {
@@ -126,7 +128,7 @@
 	});
 	
 	//SERVICES
-	var videoServices = [];
+	var videoServices = [new _youtube.YoutubeService("AIzaSyCng0zzLe_Dga9R-lhAc94IrMYhxkPD0AM")];
 	var playlistRepository = new _file.FileRepository("./data/playlist.json");
 	
 	//MODULES
@@ -526,19 +528,171 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+	exports.FileRepository = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _fs = __webpack_require__(10);
+	
+	var _fs2 = _interopRequireDefault(_fs);
+	
+	var _rxjs = __webpack_require__(6);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var readFile = _rxjs.Observable.bindNodeCallback(_fs2.default.readFile);
+	var writeFile = _rxjs.Observable.bindNodeCallback(_fs2.default.writeFile);
+	
+	var FileRepository = exports.FileRepository = function () {
+		function FileRepository(filename) {
+			_classCallCheck(this, FileRepository);
+	
+			this._filename = filename;
+		}
+	
+		_createClass(FileRepository, [{
+			key: "getAll$",
+			value: function getAll$() {
+				var _this = this;
+	
+				return readFile(this._filename).map(function (contents) {
+					return JSON.parse(contents);
+				}).do(function () {
+					console.log(_this._filename + ": got all data");
+				}).catch(function (e) {
+					console.error(_this._filename + ": failed to get all data: " + (e.stack || e));
+					return _rxjs.Observable.throw(e);
+				});
+			}
+		}, {
+			key: "save$",
+			value: function save$(items) {
+				var _this2 = this;
+	
+				return writeFile(this._filename, JSON.stringify(items)).do(function () {
+					console.log(_this2._filename + ": \"data saved\"");
+				}).catch(function (e) {
+					console.error(_this2._filename + ": failed to save data: " + (e.stack || e));
+				});
+			}
+		}]);
+
+		return FileRepository;
+	}();
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	module.exports = require("fs");
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.YoutubeService = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _rxjs = __webpack_require__(6);
+	
+	var _moment = __webpack_require__(27);
+	
+	var _moment2 = _interopRequireDefault(_moment);
+	
+	var _lodash = __webpack_require__(13);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _request = __webpack_require__(28);
+	
+	var _playlist = __webpack_require__(18);
+	
+	var _observableSocket = __webpack_require__(8);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var YOUTUBE_ENDPOINT = "https://www.googleapis.com/youtube/v3";
+	
+	var YoutubeService = exports.YoutubeService = function () {
+		function YoutubeService(apiKey) {
+			_classCallCheck(this, YoutubeService);
+	
+			this._apiKey = apiKey;
+		}
+	
+		_createClass(YoutubeService, [{
+			key: "process$",
+			value: function process$(url) {
+				var match = (0, _lodash2.default)(_playlist.YOUTUBE_REGEXES).map(function (r) {
+					return url.match(r);
+				}).find(function (a) {
+					return a != null;
+				});
+	
+				return match ? this.getSourceFromId$(match[1]) : null;
+			}
+		}, {
+			key: "getSourceFromId$",
+			value: function getSourceFromId$(id) {
+				return (0, _request.getJson$)(this._buildGetVideoUrl(id)).flatMap(function (data) {
+					if (!data || data.items.length != 1) return (0, _observableSocket.fail)("Cannot locate youtube video " + id);
+	
+					var _data$items$ = data.items[0],
+					    id = _data$items$.id,
+					    snippet = _data$items$.snippet,
+					    contentDetails = _data$items$.contentDetails;
+	
+					return _rxjs.Observable.of({
+						type: "youtube",
+						thumb: snippet.thumbnails.default.url,
+						url: id,
+						title: snippet.title || "{No Title}",
+						totalTime: _moment2.default.duration(contentDetails.duration).asSeconds()
+					});
+				});
+			}
+		}, {
+			key: "_buildGetVideoUrl",
+			value: function _buildGetVideoUrl(id) {
+				return YOUTUBE_ENDPOINT + "/videos?id=" + id + "&key=" + this._apiKey + "&part=snippet,contentDetails,statistics,status";
+			}
+		}]);
+
+		return YoutubeService;
+	}();
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
 	exports.UsersModule = undefined;
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _lodash = __webpack_require__(10);
+	var _lodash = __webpack_require__(13);
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
 	var _rxjs = __webpack_require__(6);
 	
-	var _module = __webpack_require__(11);
+	var _module = __webpack_require__(14);
 	
-	var _users = __webpack_require__(12);
+	var _users = __webpack_require__(15);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -658,13 +812,13 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 10 */
+/* 13 */
 /***/ function(module, exports) {
 
 	module.exports = require("lodash");
 
 /***/ },
-/* 11 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -704,7 +858,7 @@
 	}();
 
 /***/ },
-/* 12 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -715,7 +869,7 @@
 	exports.USERNAME_REGEX = undefined;
 	exports.validateLogin = validateLogin;
 	
-	var _validator = __webpack_require__(13);
+	var _validator = __webpack_require__(16);
 	
 	var USERNAME_REGEX = exports.USERNAME_REGEX = /^[\w\d_-]+$/;
 	
@@ -730,7 +884,7 @@
 	}
 
 /***/ },
-/* 13 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -796,7 +950,7 @@
 	}();
 
 /***/ },
-/* 14 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -808,7 +962,13 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _module = __webpack_require__(11);
+	var _rxjs = __webpack_require__(6);
+	
+	var _module = __webpack_require__(14);
+	
+	var _observableSocket = __webpack_require__(8);
+	
+	var _playlist = __webpack_require__(18);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -831,6 +991,10 @@
 	
 			_this._nextSourceId = 1;
 			_this._playlist = [];
+			_this._currentIndex = -1;
+			_this._currentSource = null;
+			_this._currentTime = 0;
+	
 			return _this;
 		}
 	
@@ -872,13 +1036,91 @@
 				this._io.emit("playlist:list", this._playlist);
 			}
 		}, {
+			key: "setCurrentSource",
+			value: function setCurrentSource() /*source*/{}
+		}, {
+			key: "addSourceFromUrl$",
+			value: function addSourceFromUrl$(url) {
+				var _this2 = this;
+	
+				var validator = (0, _playlist.validateAddSource)(url);
+				if (!validator.isValid) return validator.throw$();
+	
+				return new _rxjs.Observable(function (observer) {
+					var getSource$ = null;
+	
+					var _iteratorNormalCompletion2 = true;
+					var _didIteratorError2 = false;
+					var _iteratorError2 = undefined;
+	
+					try {
+						for (var _iterator2 = _this2._services[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+							var service = _step2.value;
+	
+							getSource$ = service.process$(url);
+	
+							if (getSource$) break;
+						}
+					} catch (err) {
+						_didIteratorError2 = true;
+						_iteratorError2 = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion2 && _iterator2.return) {
+								_iterator2.return();
+							}
+						} finally {
+							if (_didIteratorError2) {
+								throw _iteratorError2;
+							}
+						}
+					}
+	
+					if (!getSource$) return (0, _observableSocket.fail)("No service accepted url " + url);
+	
+					getSource$.do(_this2.addSource.bind(_this2)).subscribe(observer);
+				});
+			}
+		}, {
+			key: "addSource",
+			value: function addSource(source) {
+				source.id = this._nextSourceId++;
+	
+				var insertIndex = 0,
+				    afterId = -1;
+	
+				if (this._currentSource) {
+					afterId = this._currentSource.id;
+					insertIndex = this._currentIndex + 1;
+				}
+	
+				this._playlist.splice(insertIndex, 0, source);
+				this._io.emit("playlist:added", { source: source, afterId: afterId });
+	
+				if (!this._currentSource) this.setCurrentSource(source);
+	
+				console.log("playlist: added " + source.title);
+			}
+		}, {
 			key: "registerClient",
 			value: function registerClient(client) {
-				var _this2 = this;
+				var _this3 = this;
+	
+				var isLoggedIn = function isLoggedIn() {
+					return _this3._users.getUserForClient(client) !== null;
+				};
 	
 				client.onActions({
 					"playlist:list": function playlistList() {
-						return _this2._playlist;
+						return _this3._playlist;
+					},
+	
+					"playlist:add": function playlistAdd(_ref) {
+						var url = _ref.url;
+	
+						if (!isLoggedIn()) return (0, _observableSocket.fail)("You must be logged in to do that");
+	
+						return _this3.addSourceFromUrl$(url);
 					}
 				});
 			}
@@ -888,7 +1130,38 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 15 */
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.YOUTUBE_REGEXES = undefined;
+	exports.validateAddSource = validateAddSource;
+	
+	var _lodash = __webpack_require__(13);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _validator = __webpack_require__(16);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var YOUTUBE_REGEXES = exports.YOUTUBE_REGEXES = [/https?:\/\/(?:www\.)?youtube\.com\/.*?v=(.*)$/, /https?:\/\/youtu\.be\/(.*)/];
+	
+	function validateAddSource(url) {
+		var validator = new _validator.Validator();
+		if (!_lodash2.default.some(YOUTUBE_REGEXES, function (r) {
+			return r.test(url);
+		})) validator.error("Invalid Url");
+	
+		return validator;
+	}
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -900,9 +1173,9 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _module = __webpack_require__(11);
+	var _module = __webpack_require__(14);
 	
-	var _chat = __webpack_require__(16);
+	var _chat = __webpack_require__(20);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -979,7 +1252,7 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 16 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -990,11 +1263,11 @@
 	exports.MESSAGE_TYPES = undefined;
 	exports.validateSendMessage = validateSendMessage;
 	
-	var _lodash = __webpack_require__(10);
+	var _lodash = __webpack_require__(13);
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
-	var _validator = __webpack_require__(13);
+	var _validator = __webpack_require__(16);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1013,32 +1286,32 @@
 	}
 
 /***/ },
-/* 17 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack-dev-middleware");
 
 /***/ },
-/* 18 */
+/* 22 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack-hot-middleware");
 
 /***/ },
-/* 19 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack");
 
 /***/ },
-/* 20 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var path = __webpack_require__(21),
-	    webpack = __webpack_require__(19),
-	    ExtractTextPlugin = __webpack_require__(22);
+	var path = __webpack_require__(25),
+	    webpack = __webpack_require__(23),
+	    ExtractTextPlugin = __webpack_require__(26);
 	
 	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs", "moment", "moment-duration-format"];
 	
@@ -1090,19 +1363,25 @@
 	module.exports.create = createConfig;
 
 /***/ },
-/* 21 */
+/* 25 */
 /***/ function(module, exports) {
 
 	module.exports = require("path");
 
 /***/ },
-/* 22 */
+/* 26 */
 /***/ function(module, exports) {
 
 	module.exports = require("extract-text-webpack-plugin");
 
 /***/ },
-/* 23 */
+/* 27 */
+/***/ function(module, exports) {
+
+	module.exports = require("moment");
+
+/***/ },
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1110,65 +1389,35 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.FileRepository = undefined;
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _fs = __webpack_require__(24);
-	
-	var _fs2 = _interopRequireDefault(_fs);
+	exports.getJson$ = getJson$;
 	
 	var _rxjs = __webpack_require__(6);
 	
+	var _request = __webpack_require__(29);
+	
+	var _request2 = _interopRequireDefault(_request);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function getJson$(url) {
+		return new _rxjs.Observable(function (observer) {
+			(0, _request2.default)(url, function (error, response, body) {
+				if (error) {
+					observer.error(error);
+					return;
+				}
 	
-	var readFile = _rxjs.Observable.bindNodeCallback(_fs2.default.readFile);
-	var writeFile = _rxjs.Observable.bindNodeCallback(_fs2.default.writeFile);
-	
-	var FileRepository = exports.FileRepository = function () {
-		function FileRepository(filename) {
-			_classCallCheck(this, FileRepository);
-	
-			this._filename = filename;
-		}
-	
-		_createClass(FileRepository, [{
-			key: "getAll$",
-			value: function getAll$() {
-				var _this = this;
-	
-				return readFile(this._filename).map(function (contents) {
-					return JSON.parse(contents);
-				}).do(function () {
-					console.log(_this._filename + ": got all data");
-				}).catch(function (e) {
-					console.error(_this._filename + ": failed to get all data: " + (e.stack || e));
-					return _rxjs.Observable.throw(e);
-				});
-			}
-		}, {
-			key: "save$",
-			value: function save$(items) {
-				var _this2 = this;
-	
-				return writeFile(this._filename, JSON.stringify(items)).do(function () {
-					console.log(_this2._filename + ": \"data saved\"");
-				}).catch(function (e) {
-					console.error(_this2._filename + ": failed to save data: " + (e.stack || e));
-				});
-			}
-		}]);
-
-		return FileRepository;
-	}();
+				observer.next(JSON.parse(body));
+				observer.complete();
+			});
+		});
+	}
 
 /***/ },
-/* 24 */
+/* 29 */
 /***/ function(module, exports) {
 
-	module.exports = require("fs");
+	module.exports = require("request");
 
 /***/ }
 /******/ ]);
