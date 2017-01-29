@@ -52,7 +52,7 @@ class PlaylistItemComponent extends ElementComponent {
 			]);
 
 		this._$progress = $(`<span class="progress" />`);
-		this.$element.append($(`<div class="inner" />`).append([
+		this.$element.append($(`<div class="inner"fff />`).append([
 			$thumb,
 			$details,
 			this._$progress]));
