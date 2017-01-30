@@ -46,6 +46,43 @@ export class PlaylistListComponent extends ElementComponent {
 				itemsMap[source.id] = comp;
 				this._addItem(comp, addAfter ? itemsMap[addAfter.id] : null);
 			});
+
+		//CURRENT ITEM
+		let lastComp = null;
+		this._playlist.serverTime$
+			.compSubscribe(this, current => {
+				if (current == null) {
+					if (lastComp != null) {
+						lastComp.isPlaying = false;
+						lastComp = null;
+					}
+
+					return;
+				} 
+
+				const currentComp = itemsMap[current.source.id];
+				if (currentComp == null) {
+					console.error(`Cannot find component for ${current.source.id} / ${current.source.title}`);
+					return;
+				}
+
+				if (lastComp != currentComp) {
+					if (lastComp != null)
+						lastComp.isPlaying = false;
+
+					lastComp = currentComp;
+					currentComp.isPlaying = true;
+
+					const scrollTop = currentComp.$element.offset().top - 
+						this.$element.offset().top + 
+						this.$element.scrollTop() - 
+						currentComp.$element.height() * 2;
+
+					this._$mount.animate({ scrollTop });
+				}
+
+				currentComp.progress = current.progress;
+			});
 	}
 
 	_addItem(comp, addAfterComp) {
@@ -67,6 +104,14 @@ export class PlaylistListComponent extends ElementComponent {
 }
 
 class PlaylistItemComponent extends ElementComponent {
+	set isPlaying(isPlaying) {
+		this._setClass("is-playing", isPlaying);
+	}
+
+	set progress(progress) {
+		this._$progress.css("width", `${progress}%`);
+	}
+
 	constructor(source) {
 		super("li");
 		this._source = source;
@@ -81,7 +126,7 @@ class PlaylistItemComponent extends ElementComponent {
 			]);
 
 		this._$progress = $(`<span class="progress" />`);
-		this.$element.append($(`<div class="inner"fff />`).append([
+		this.$element.append($(`<div class="inner" />`).append([
 			$thumb,
 			$details,
 			this._$progress]));

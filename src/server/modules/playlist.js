@@ -58,7 +58,6 @@ export class PlaylistModule extends ModuleBase {
 
 		this._io.emit("playlist:current", this._createCurrentEvent());
 		console.log(`playlist: setting current to ${source ? source.title : "{nothing}"}`);
-
 	}
 
 	playNextSource() {
@@ -122,7 +121,7 @@ export class PlaylistModule extends ModuleBase {
 			if (this._playlist.length)
 				this.setCurrentSource(this._playlist[0]);
 		} else {
-			this.currentTime++
+			this._currentTime++;
 			if (this._currentTime > this._currentSource.totalTime + 2)
 				this.playNextSource();
 		}
@@ -133,10 +132,14 @@ export class PlaylistModule extends ModuleBase {
 	}
 
 	_createCurrentEvent() {
-		return this._currentSource ? {
+		return this._currentSource 
+		? {
 			id: this._currentSource.id,
 			time: this._currentTime
-		} : { id: null, time: 0 };
+		} : { 
+			id: null, 
+			time: 0 
+		};
 	}
 
 	registerClient(client) {
