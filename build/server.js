@@ -74,11 +74,11 @@
 	
 	var _youtube = __webpack_require__(11);
 	
-	var _users = __webpack_require__(12);
+	var _users = __webpack_require__(18);
 	
-	var _playlist = __webpack_require__(17);
+	var _playlist = __webpack_require__(21);
 	
-	var _chat = __webpack_require__(19);
+	var _chat = __webpack_require__(22);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -93,10 +93,10 @@
 	
 	//CLIENT WEBPACK
 	if (process.env.USE_WEBPACK === "true") {
-		var webpackMiddleware = __webpack_require__(21),
-		    webpackHotMiddleware = __webpack_require__(22),
-		    webpack = __webpack_require__(23),
-		    clientConfig = __webpack_require__(24);
+		var webpackMiddleware = __webpack_require__(24),
+		    webpackHotMiddleware = __webpack_require__(25),
+		    webpack = __webpack_require__(26),
+		    clientConfig = __webpack_require__(27);
 	
 		var compiler = webpack(clientConfig);
 		app.use(webpackMiddleware(compiler, {
@@ -603,7 +603,7 @@
 	
 	var _rxjs = __webpack_require__(6);
 	
-	var _moment = __webpack_require__(27);
+	var _moment = __webpack_require__(12);
 	
 	var _moment2 = _interopRequireDefault(_moment);
 	
@@ -611,9 +611,9 @@
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
-	var _request = __webpack_require__(28);
+	var _request = __webpack_require__(14);
 	
-	var _playlist = __webpack_require__(18);
+	var _playlist = __webpack_require__(16);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -673,6 +673,154 @@
 
 /***/ },
 /* 12 */
+/***/ function(module, exports) {
+
+	module.exports = require("moment");
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	module.exports = require("lodash");
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.getJson$ = getJson$;
+	
+	var _rxjs = __webpack_require__(6);
+	
+	var _request = __webpack_require__(15);
+	
+	var _request2 = _interopRequireDefault(_request);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function getJson$(url) {
+		return new _rxjs.Observable(function (observer) {
+			(0, _request2.default)(url, function (error, response, body) {
+				if (error) {
+					observer.error(error);
+					return;
+				}
+	
+				observer.next(JSON.parse(body));
+				observer.complete();
+			});
+		});
+	}
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	module.exports = require("request");
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.YOUTUBE_REGEXES = undefined;
+	exports.validateAddSource = validateAddSource;
+	
+	var _lodash = __webpack_require__(13);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _validator = __webpack_require__(17);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var YOUTUBE_REGEXES = exports.YOUTUBE_REGEXES = [/https?:\/\/(?:www\.)?youtube\.com\/.*?v=(.*)$/, /https?:\/\/youtu\.be\/(.*)/];
+	
+	function validateAddSource(url) {
+		var validator = new _validator.Validator();
+		if (!_lodash2.default.some(YOUTUBE_REGEXES, function (r) {
+			return r.test(url);
+		})) validator.error("Invalid Url");
+	
+		return validator;
+	}
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.Validator = undefined;
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _rxjs = __webpack_require__(6);
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	var Validator = exports.Validator = function () {
+		_createClass(Validator, [{
+			key: "isValid",
+			get: function get() {
+				return !this._errors.length;
+			}
+		}, {
+			key: "errors",
+			get: function get() {
+				return this._errors;
+			}
+		}, {
+			key: "message",
+			get: function get() {
+				return this._errors.join(", ");
+			}
+		}]);
+	
+		function Validator() {
+			_classCallCheck(this, Validator);
+	
+			this._errors = [];
+		}
+	
+		_createClass(Validator, [{
+			key: "error",
+			value: function error(message) {
+				this._errors.push(message);
+			}
+		}, {
+			key: "toObject",
+			value: function toObject() {
+				if (this.isValid) return {};
+	
+				return {
+					errors: this._errors,
+					message: this.message
+				};
+			}
+		}, {
+			key: "throw$",
+			value: function throw$() {
+				return _rxjs.Observable.throw({ clientMessage: this.message });
+			}
+		}]);
+
+		return Validator;
+	}();
+
+/***/ },
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -690,9 +838,9 @@
 	
 	var _rxjs = __webpack_require__(6);
 	
-	var _module = __webpack_require__(14);
+	var _module = __webpack_require__(19);
 	
-	var _users = __webpack_require__(15);
+	var _users = __webpack_require__(20);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -812,13 +960,7 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 13 */
-/***/ function(module, exports) {
-
-	module.exports = require("lodash");
-
-/***/ },
-/* 14 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -858,7 +1000,7 @@
 	}();
 
 /***/ },
-/* 15 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -869,7 +1011,7 @@
 	exports.USERNAME_REGEX = undefined;
 	exports.validateLogin = validateLogin;
 	
-	var _validator = __webpack_require__(16);
+	var _validator = __webpack_require__(17);
 	
 	var USERNAME_REGEX = exports.USERNAME_REGEX = /^[\w\d_-]+$/;
 	
@@ -884,73 +1026,7 @@
 	}
 
 /***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.Validator = undefined;
-	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-	
-	var _rxjs = __webpack_require__(6);
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	var Validator = exports.Validator = function () {
-		_createClass(Validator, [{
-			key: "isValid",
-			get: function get() {
-				return !this._errors.length;
-			}
-		}, {
-			key: "errors",
-			get: function get() {
-				return this._errors;
-			}
-		}, {
-			key: "message",
-			get: function get() {
-				return this._errors.join(", ");
-			}
-		}]);
-	
-		function Validator() {
-			_classCallCheck(this, Validator);
-	
-			this._errors = [];
-		}
-	
-		_createClass(Validator, [{
-			key: "error",
-			value: function error(message) {
-				this._errors.push(message);
-			}
-		}, {
-			key: "toObject",
-			value: function toObject() {
-				if (this.isValid) return {};
-	
-				return {
-					errors: this._errors,
-					message: this.message
-				};
-			}
-		}, {
-			key: "throw$",
-			value: function throw$() {
-				return _rxjs.Observable.throw({ clientMessage: this.message });
-			}
-		}]);
-
-		return Validator;
-	}();
-
-/***/ },
-/* 17 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -964,11 +1040,17 @@
 	
 	var _rxjs = __webpack_require__(6);
 	
-	var _module = __webpack_require__(14);
+	var _lodash = __webpack_require__(13);
+	
+	var _lodash2 = _interopRequireDefault(_lodash);
+	
+	var _module = __webpack_require__(19);
 	
 	var _observableSocket = __webpack_require__(8);
 	
-	var _playlist = __webpack_require__(18);
+	var _playlist = __webpack_require__(16);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -995,6 +1077,8 @@
 			_this._currentSource = null;
 			_this._currentTime = 0;
 	
+			setInterval(_this._tickUpdateTime.bind(_this), 1000);
+			setInterval(_this._tickUpdateClients.bind(_this), 5000);
 			return _this;
 		}
 	
@@ -1002,6 +1086,11 @@
 			key: "init$",
 			value: function init$() {
 				return this._repository.getAll$().do(this.setPlaylist.bind(this));
+			}
+		}, {
+			key: "getSourceById",
+			value: function getSourceById(id) {
+				return _lodash2.default.find(this._playlist, { id: id });
 			}
 		}, {
 			key: "setPlaylist",
@@ -1037,7 +1126,32 @@
 			}
 		}, {
 			key: "setCurrentSource",
-			value: function setCurrentSource() /*source*/{}
+			value: function setCurrentSource(source) {
+				if (source == null) {
+					this._currentSource = null;
+					this._currentIndex = this._currentTime = 0;
+				} else {
+					var newIndex = this._playlist.indexOf(source);
+					if (newIndex === -1) throw new Error("Cannot set current to source " + source.id + " / " + source.title + ". it was not found");
+	
+					this._currentTime = 0;
+					this._currentSource = source;
+					this._currentIndex = newIndex;
+				}
+	
+				this._io.emit("playlist:current", this._createCurrentEvent());
+				console.log("playlist: setting current to " + (source ? source.title : "{nothing}"));
+			}
+		}, {
+			key: "playNextSource",
+			value: function playNextSource() {
+				if (!this._playlist.length) {
+					this.setCurrentSource(null);
+					return;
+				}
+	
+				if (this._currentIndex + 1 >= this._playlist.length) this.setCurrentSource(this._playlist[0]);else this.setCurrentSource(this._playlist[this._currentIndex + 1]);
+			}
 		}, {
 			key: "addSourceFromUrl$",
 			value: function addSourceFromUrl$(url) {
@@ -1102,6 +1216,29 @@
 				console.log("playlist: added " + source.title);
 			}
 		}, {
+			key: "_tickUpdateTime",
+			value: function _tickUpdateTime() {
+				if (this._currentSource == null) {
+					if (this._playlist.length) this.setCurrentSource(this._playlist[0]);
+				} else {
+					this.currentTime++;
+					if (this._currentTime > this._currentSource.totalTime + 2) this.playNextSource();
+				}
+			}
+		}, {
+			key: "_tickUpdateClients",
+			value: function _tickUpdateClients() {
+				this._io.emit("playlist:current", this._createCurrentEvent());
+			}
+		}, {
+			key: "_createCurrentEvent",
+			value: function _createCurrentEvent() {
+				return this._currentSource ? {
+					id: this._currentSource.id,
+					time: this._currentTime
+				} : { id: null, time: 0 };
+			}
+		}, {
 			key: "registerClient",
 			value: function registerClient(client) {
 				var _this3 = this;
@@ -1113,6 +1250,10 @@
 				client.onActions({
 					"playlist:list": function playlistList() {
 						return _this3._playlist;
+					},
+	
+					"playlist:current": function playlistCurrent() {
+						return _this3._createCurrentEvent();
 					},
 	
 					"playlist:add": function playlistAdd(_ref) {
@@ -1130,38 +1271,7 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.YOUTUBE_REGEXES = undefined;
-	exports.validateAddSource = validateAddSource;
-	
-	var _lodash = __webpack_require__(13);
-	
-	var _lodash2 = _interopRequireDefault(_lodash);
-	
-	var _validator = __webpack_require__(16);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var YOUTUBE_REGEXES = exports.YOUTUBE_REGEXES = [/https?:\/\/(?:www\.)?youtube\.com\/.*?v=(.*)$/, /https?:\/\/youtu\.be\/(.*)/];
-	
-	function validateAddSource(url) {
-		var validator = new _validator.Validator();
-		if (!_lodash2.default.some(YOUTUBE_REGEXES, function (r) {
-			return r.test(url);
-		})) validator.error("Invalid Url");
-	
-		return validator;
-	}
-
-/***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1173,9 +1283,9 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _module = __webpack_require__(14);
+	var _module = __webpack_require__(19);
 	
-	var _chat = __webpack_require__(20);
+	var _chat = __webpack_require__(23);
 	
 	var _observableSocket = __webpack_require__(8);
 	
@@ -1252,7 +1362,7 @@
 	}(_module.ModuleBase);
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1267,7 +1377,7 @@
 	
 	var _lodash2 = _interopRequireDefault(_lodash);
 	
-	var _validator = __webpack_require__(16);
+	var _validator = __webpack_require__(17);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1286,32 +1396,32 @@
 	}
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack-dev-middleware");
 
 /***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack-hot-middleware");
 
 /***/ },
-/* 23 */
+/* 26 */
 /***/ function(module, exports) {
 
 	module.exports = require("webpack");
 
 /***/ },
-/* 24 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var path = __webpack_require__(25),
-	    webpack = __webpack_require__(23),
-	    ExtractTextPlugin = __webpack_require__(26);
+	var path = __webpack_require__(28),
+	    webpack = __webpack_require__(26),
+	    ExtractTextPlugin = __webpack_require__(29);
 	
 	var vendorModules = ["jquery", "lodash", "socket.io-client", "rxjs", "moment", "moment-duration-format"];
 	
@@ -1363,61 +1473,16 @@
 	module.exports.create = createConfig;
 
 /***/ },
-/* 25 */
+/* 28 */
 /***/ function(module, exports) {
 
 	module.exports = require("path");
 
 /***/ },
-/* 26 */
-/***/ function(module, exports) {
-
-	module.exports = require("extract-text-webpack-plugin");
-
-/***/ },
-/* 27 */
-/***/ function(module, exports) {
-
-	module.exports = require("moment");
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.getJson$ = getJson$;
-	
-	var _rxjs = __webpack_require__(6);
-	
-	var _request = __webpack_require__(29);
-	
-	var _request2 = _interopRequireDefault(_request);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function getJson$(url) {
-		return new _rxjs.Observable(function (observer) {
-			(0, _request2.default)(url, function (error, response, body) {
-				if (error) {
-					observer.error(error);
-					return;
-				}
-	
-				observer.next(JSON.parse(body));
-				observer.complete();
-			});
-		});
-	}
-
-/***/ },
 /* 29 */
 /***/ function(module, exports) {
 
-	module.exports = require("request");
+	module.exports = require("extract-text-webpack-plugin");
 
 /***/ }
 /******/ ]);

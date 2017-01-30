@@ -16,7 +16,7 @@ export class YoutubeService {
 	process$(url) {
 		const match = _(YOUTUBE_REGEXES)
 			.map(r => url.match(r))
-			.find(a => a != null)
+			.find(a => a != null);
 
 		return match ? this.getSourceFromId$(match[1]) : null;
 	}
