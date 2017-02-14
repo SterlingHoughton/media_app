@@ -44,7 +44,6 @@ export class PlaylistContextMenuComponent extends ElementComponent {
 		let lastItem = null;
 		selectedItem$
 			.compSubscribe(this, item => {
-				console.log(item);
 				if (lastItem)
 					lastItem.isSelected = false;
 
@@ -59,7 +58,7 @@ export class PlaylistContextMenuComponent extends ElementComponent {
 
 				const contextMenuHeight = this.$element.outerHeight();
 				const itemHeight = item.$element.outerHeight();
-				const itemPosition = item.$element.position().top;
+				const itemPosition = item.$element[0].offsetTop;
 
 				const targetPosition = itemPosition + itemHeight + contextMenuHeight > this._$list[0].scrollHeight
 					? itemPosition - contextMenuHeight
