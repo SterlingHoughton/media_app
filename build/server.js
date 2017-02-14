@@ -1265,6 +1265,17 @@
 						if (!isLoggedIn()) return (0, _observableSocket.fail)("You must be logged in to do that");
 	
 						return _this3.addSourceFromUrl$(url);
+					},
+	
+					"playlist:set-current": function playlistSetCurrent(_ref2) {
+						var id = _ref2.id;
+	
+						if (!isLoggedIn()) return (0, _observableSocket.fail)("You must be logged in to do that");
+	
+						var source = _this3.getSourceById(id);
+						if (!source) return (0, _observableSocket.fail)("Cannot find source " + id);
+	
+						_this3.setCurrentSource(source);
 					}
 				});
 			}
