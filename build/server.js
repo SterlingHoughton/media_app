@@ -1242,6 +1242,23 @@
 				};
 			}
 		}, {
+			key: "deleteSourceById",
+			value: function deleteSourceById(id) {
+				var source = this.getSourceById(id);
+				if (!source) throw new Error("Cannot find source " + id);
+	
+				var sourceIndex = this._playlist.indexOf(source);
+	
+				if (source == this._currentSource) if (this._playlist.length == 1) this.setCurrentSource(null);else this.playNextSource();
+	
+				this._playlist.splice(sourceIndex, 1);
+	
+				if (this._currentSource) this._currentIndex = this._playlist.indexOf(this._currentSource);
+	
+				this._io.emit("playlist:removed", { id: id });
+				console.log("playlist: deleted " + source.title);
+			}
+		}, {
 			key: "registerClient",
 			value: function registerClient(client) {
 				var _this3 = this;
@@ -1276,6 +1293,14 @@
 						if (!source) return (0, _observableSocket.fail)("Cannot find source " + id);
 	
 						_this3.setCurrentSource(source);
+					},
+	
+					"playlist:remove": function playlistRemove(_ref3) {
+						var id = _ref3.id;
+	
+						if (!isLoggedIn()) return (0, _observableSocket.fail)("You must be logged in to do that");
+	
+						_this3.deleteSourceById(id);
 					}
 				});
 			}
