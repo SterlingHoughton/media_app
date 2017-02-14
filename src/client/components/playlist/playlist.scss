@@ -51,6 +51,21 @@ section.playlist .toolbar {
 	}
 }
 
+//CONTEXT MENU
+section.playlist .context-menu {
+	z-index: 100;
+	left: 0;
+	width: 100%;
+	box-sizing: border-box;
+	display: none;
+	position: absolute;
+	background: lighten($background-panel, 10%);
+	border: 5px solid lighten($border-panel, 10%);
+
+	&.open {
+		display: block;
+	}
+}
 
 //PLAYLIST ITEMS
 @mixin thumbnail-size($width) {
@@ -172,6 +187,7 @@ section.playlist .playlist-list {
 				}
 
 				.progress {
+					transition: width 100ms;
 					z-index: 200;
 					background: $color-information;
 				}

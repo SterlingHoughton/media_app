@@ -108,6 +108,10 @@ class PlaylistItemComponent extends ElementComponent {
 		this._setClass("is-playing", isPlaying);
 	}
 
+	set isSelected(isSelected) {
+		this._setClass("selected", isSelected);
+	}
+
 	set progress(progress) {
 		this._$progress.css("width", `${progress}%`);
 	}
